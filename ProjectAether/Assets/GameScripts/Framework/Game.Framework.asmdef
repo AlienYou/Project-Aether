@@ -1,3 +1,16 @@
 {
-	"name": "Game.Framework"
+    "name": "Game.Framework",
+    "rootNamespace": "",
+    "references": [
+        "GUID:190606442932c4547b6c8cd411173e6f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
