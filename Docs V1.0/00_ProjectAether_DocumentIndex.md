@@ -1,6 +1,6 @@
 # 00_ProjectAether_DocumentIndex
 
-版本：v1.0
+版本：v1.1
 
 项目：Project Aether
 
@@ -14,7 +14,7 @@
 
 当前阶段：
 
-核心框架开发
+Framework核心框架开发
 
 当前版本：
 
@@ -26,9 +26,29 @@ Framework阶段
 
 ---
 
-# 第一部分 架构设计（01~10）
+# ADR（架构决策记录）
 
-## 01~05
+## ADR-001 Framework启动架构
+
+决策：
+
+采用 ModuleFramework + Bootstrap
+
+放弃：
+
+Bootstrap直接初始化所有系统
+
+原因：
+
+1. 降低Bootstrap耦合
+2. 支持模块化扩展
+3. 支持未来热更新
+4. 支持插件式架构
+5. 符合工业级项目设计
+
+---
+
+# 第一部分 架构设计（01~10）
 
 ✅ 01_项目总体架构设计
 
@@ -39,10 +59,6 @@ Framework阶段
 ✅ 04_程序集设计方案
 
 ✅ 05_资源管理总体设计
-
----
-
-## 06~10
 
 ✅ 06_角色系统设计
 
@@ -104,25 +120,25 @@ Framework阶段
 
 ---
 
-# 第四部分 核心框架（31~40）
+# 第四部分 Framework核心框架（31~40）
 
-⏳ 31_核心框架实现_Bootstrap启动框架
+🟡 31_核心框架实现_ModuleFramework模块框架
 
-⏳ 32_核心框架实现_ConfigManager
+⏳ 32_核心框架实现_Bootstrap启动框架
 
-⏳ 33_核心框架实现_ResourceManager
+⏳ 33_核心框架实现_ConfigModule
 
-⏳ 34_核心框架实现_UIManager
+⏳ 34_核心框架实现_ResourceModule
 
-⏳ 35_核心框架实现_NetworkManager
+⏳ 35_核心框架实现_UIModule
 
-⏳ 36_核心框架实现_SaveManager
+⏳ 36_核心框架实现_NetworkModule
 
-⏳ 37_核心框架实现_ObjectPool
+⏳ 37_核心框架实现_SaveModule
 
-⏳ 38_核心框架实现_TimerSystem
+⏳ 38_核心框架实现_ObjectPool
 
-⏳ 39_核心框架实现_CommandSystem
+⏳ 39_核心框架实现_TimerSystem
 
 ⏳ 40_核心框架实现_Procedure流程框架
 
@@ -276,7 +292,7 @@ Framework阶段
 
 ✅ 已完成
 
-🟡 开发中
+🟡 当前开发中
 
 ⏳ 未开始
 
@@ -286,16 +302,48 @@ Framework阶段
 
 当前文档：
 
-30_核心框架实现_FSM状态机框架
+31_核心框架实现_ModuleFramework模块框架
 
 下一文档：
 
-31_核心框架实现_Bootstrap启动框架
+32_核心框架实现_Bootstrap启动框架
+
+---
+
+# Framework最终目标结构
+
+Game.Framework
+
+├── EventBus
+
+├── ServiceLocator
+
+├── FSM
+
+├── Module
+
+├── Bootstrap
+
+├── ObjectPool
+
+├── Timer
+
+└── Procedure
 
 ---
 
 # 结论
 
-本文件作为 Project Aether 全项目导航索引。
+Project Aether 已完成基础框架阶段：
 
-后续所有新增文档均需同步更新本索引。
+Log
+
+EventBus
+
+ServiceLocator
+
+FSM
+
+下一阶段正式进入：
+
+ModuleFramework → Bootstrap → ConfigModule体系。
