@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using ProjectAether.Config;
 using ProjectAether.Core;
 using UnityEngine;
 
@@ -23,10 +24,11 @@ namespace ProjectAether.Framework
         private static void RegisterModules()
         {
             //Test
-            ModuleManager.Register(new Test.TestModule());
+            // ModuleManager.Register(new Test.TestModule());
 
             // 后续注册：
             // ConfigModule
+            ModuleManager.Register(new ConfigModule());
             // ResourceModule
             // UIModule
             // NetworkModule

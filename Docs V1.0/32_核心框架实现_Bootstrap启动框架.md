@@ -1,18 +1,18 @@
-# 32_核心框架实现_Bootstrap启动框架
+# 32_核心框架实现_Bootstrap启动框架（修正版）
 
-版本：v1.0
+版本：v1.1
 
 项目：Project Aether
 
 引擎版本：Unity 2022.3.51f1c1
 
-文档状态：开发实施版
+文档状态：开发实施版（ADR-002修正版）
 
 ---
 
 # 1. 文档目标
 
-建立 Project Aether 游戏启动入口。
+建立 Project Aether 唯一启动入口。
 
 负责：
 
@@ -23,27 +23,27 @@
 
 不负责：
 
-* 模块业务逻辑
+* 业务逻辑
+* 配置管理
+* 资源管理
+
+Bootstrap 仅负责框架启动。
 
 ---
 
 # 2. 所属程序集
 
-Game.Framework
+Game.Entry
 
 ---
 
 # 3. 程序集依赖
 
-引用：
+## 引用
 
 Game.Core
 
 Game.Framework
-
----
-
-被引用：
 
 Game.Config
 
@@ -55,9 +55,17 @@ Game.Network
 
 ---
 
+## 被引用
+
+无
+
+Game.Entry 为最顶层程序集。
+
+---
+
 # 4. 物理路径
 
-Assets/GameScripts/Framework/Bootstrap
+Assets/GameScripts/Entry/Bootstrap
 
 ---
 
@@ -67,99 +75,132 @@ Bootstrap.cs
 
 BootstrapRunner.cs
 
+Game.Entry.asmdef
+
 ---
 
-# 6. 架构设计
+# 6. asmdef配置
+
+程序集名称：
+
+Game.Entry
+
+---
+
+引用程序集：
+
+Game.Core
+
+Game.Framework
+
+Game.Config
+
+Game.Resource
+
+Game.UI
+
+Game.Network
+
+---
+
+目录：
+
+Assets/GameScripts/Entry
+
+---
+
+# 7. 架构设计
+
+程序集结构：
+
+Game.Entry
+
+↓
+
+Game.Config
+
+Game.Resource
+
+Game.UI
+
+Game.Network
+
+↓
+
+Game.Framework
+
+↓
+
+Game.Core
+
+---
 
 启动流程：
 
-```text
-Unity Start
+Unity
 
 ↓
+
 BootstrapRunner
 
 ↓
+
 Bootstrap.Initialize()
 
 ↓
-Register Modules
+
+RegisterModules()
 
 ↓
-Initialize Modules
+
+ModuleManager.InitializeAll()
 
 ↓
+
 Game Ready
-```
-
-运行流程：
-
-```text
-Update
-
-↓
-
-ModuleManager.UpdateAll()
-```
-
-关闭流程：
-
-```text
-Application Quit
-
-↓
-
-ModuleManager.ShutdownAll()
-```
 
 ---
 
-# 7. 生命周期
+# 8. 生命周期
 
-创建时机：
+Create
 
 Unity启动
 
 ---
 
-初始化时机：
+Initialize
 
 Bootstrap.Initialize()
 
 ---
 
-更新时机：
+Update
 
-每帧Update
+ModuleManager.UpdateAll()
 
 ---
 
-销毁时机：
+Shutdown
 
 Application Quit
 
 ---
 
-# 8. 代码实现
+# 9. 代码实现
 
 ## Bootstrap.cs
 
 ```csharp
-using ProjectAether.Core;
+using ProjectAether.Framework;
+using ProjectAether.Config;
 
-namespace ProjectAether.Framework
+namespace ProjectAether.Entry
 {
     public static class Bootstrap
     {
         public static void Initialize()
         {
-            Log.Info(
-                "Bootstrap Initialize");
-
-            EventBus.Clear();
-
-            ServiceLocator.Clear();
-
             RegisterModules();
 
             ModuleManager.InitializeAll();
@@ -167,9 +208,10 @@ namespace ProjectAether.Framework
 
         private static void RegisterModules()
         {
-            // 后续注册：
+            ModuleManager.Register(
+                new ConfigModule());
 
-            // ConfigModule
+            // 后续：
 
             // ResourceModule
 
@@ -181,9 +223,6 @@ namespace ProjectAether.Framework
         public static void Shutdown()
         {
             ModuleManager.ShutdownAll();
-
-            Log.Info(
-                "Bootstrap Shutdown");
         }
     }
 }
@@ -195,8 +234,9 @@ namespace ProjectAether.Framework
 
 ```csharp
 using UnityEngine;
+using ProjectAether.Framework;
 
-namespace ProjectAether.Framework
+namespace ProjectAether.Entry
 {
     public class BootstrapRunner
         : MonoBehaviour
@@ -221,18 +261,6 @@ namespace ProjectAether.Framework
 
 ---
 
-# 9. 测试代码
-
-测试直接复用：
-
-TestModule
-
-ModuleFramework
-
-测试代码。
-
----
-
 # 10. Unity测试步骤
 
 创建：
@@ -249,17 +277,6 @@ BootstrapRunner
 
 ---
 
-在RegisterModules()
-
-中注册：
-
-```csharp
-ModuleManager.Register(
-    new TestModule());
-```
-
----
-
 运行项目
 
 ---
@@ -267,15 +284,15 @@ ModuleManager.Register(
 # 11. 预期输出
 
 ```text
-[INFO] Bootstrap Initialize
+[INFO] [Config] Create
 
-[INFO] Create Module
+[INFO] [Config] Initialize
+```
 
-[INFO] Initialize Module
+退出：
 
-[INFO] Shutdown Module
-
-[INFO] Bootstrap Shutdown
+```text
+[INFO] [Config] Shutdown
 ```
 
 ---
@@ -296,9 +313,13 @@ Bootstrap.Shutdown()
 
 模块初始化
 
-模块更新
-
 模块关闭
+
+---
+
+支持：
+
+Game.Entry 启动流程
 
 ---
 
@@ -306,55 +327,43 @@ Bootstrap.Shutdown()
 
 Commit：
 
-[Feature] Add Bootstrap
+[Refactor] Move Bootstrap To Entry
 
 Tag：
 
-v0.1.5
+v0.1.5a
 
 ---
 
 # 14. 后续扩展计划
 
-## V2
+V2：
 
-启动阶段：
+启动阶段拆分
 
-```text
 PreInit
 
 Init
 
 PostInit
-```
 
 ---
 
-## V3
+V3：
 
-启动进度条
-
-Loading Scene
+Loading流程
 
 ---
 
-## V4
+V4：
 
-异步启动
-
-Addressables加载
-
-配置表加载
+异步模块初始化
 
 ---
 
-## V5
+V5：
 
-热更新启动流程
-
-Patch检查
-
-资源版本检测
+热更新启动器
 
 ---
 
@@ -362,18 +371,39 @@ Patch检查
 
 上游：
 
-31_核心框架实现_ModuleFramework模块框架.md
+31_核心框架实现_ModuleFramework模块框架
 
-下游：
-
-33_核心框架实现_ConfigModule.md
+ADR-002_程序集依赖架构修正
 
 ---
 
-# 16. 结论
+下游：
 
-Bootstrap 是 Project Aether 唯一启动入口。
+33_核心框架实现_ConfigModule
 
-Bootstrap 不直接管理业务系统。
+34_核心框架实现_ConfigManager
 
-所有业务模块均通过 ModuleFramework 接入。
+---
+
+# 16. 当前工程结构
+
+Assets/GameScripts
+
+├── Core
+
+├── Framework
+
+├── Config
+
+└── Entry
+└── Bootstrap
+
+---
+
+# 17. 结论
+
+Bootstrap 已迁移至 Game.Entry。
+
+Game.Framework 不再引用任何业务程序集。
+
+程序集依赖保持单向结构，彻底避免循环引用问题。

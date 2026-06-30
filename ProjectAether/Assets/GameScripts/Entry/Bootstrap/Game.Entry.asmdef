@@ -1,7 +1,8 @@
 {
-    "name": "Game.Config",
+    "name": "Game.Entry",
     "rootNamespace": "",
     "references": [
+        "GUID:b0dba08ffed3bb54fa0af0158368b143",
         "GUID:190606442932c4547b6c8cd411173e6f",
         "GUID:fa7385ae22d284b4d8dc86344c99073f"
     ],
