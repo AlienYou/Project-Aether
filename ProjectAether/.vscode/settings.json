@@ -51,5 +51,6 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "ProjectAether.sln"
+    "dotnet.defaultSolution": "ProjectAether.sln",
+    "svn.ignoreMissingSvnWarning": true
 }
