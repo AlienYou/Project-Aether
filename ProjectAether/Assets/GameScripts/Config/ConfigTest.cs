@@ -22,14 +22,13 @@ namespace ProjectAether.Config
             ConfigManager.Load(monsterConfigs);
 
             MonsterConfig monster = ConfigManager.Get<MonsterConfig>(2);
-        
-            Log.Info($"Monster ID: {monster.Id}, Name: {monster.Name}, HP: {monster.Hp}");
-        }
 
-        // Update is called once per frame
-        void Update()
-        {
-            
+            Log.Info($"Monster ID: {monster.Id}, Name: {monster.Name}, HP: {monster.Hp}");
+        
+            SkillConfig skillConfig = new SkillConfig { Id = 1, Name = "Fireball", Damage = 50, Cooldown = 2.5f };
+            ConfigManager.Load(new List<SkillConfig> { skillConfig });
+        
+            Log.Info($"Skill ID: {skillConfig.Id}, Name: {skillConfig.Name}, Damage: {skillConfig.Damage}, Cooldown: {skillConfig.Cooldown}");
         }
     }
 }
