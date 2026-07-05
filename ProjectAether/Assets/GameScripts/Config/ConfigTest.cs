@@ -12,23 +12,20 @@ namespace ProjectAether.Config
         {
             ConfigManager.Initialize();
 
-            List<MonsterConfig> monsterConfigs = new List<MonsterConfig>
-            {
-                new MonsterConfig { Id = 1, Name = "Goblin", Hp = 100 },
-                new MonsterConfig { Id = 2, Name = "Orc", Hp = 200 },
-                new MonsterConfig { Id = 3, Name = "Dragon", Hp = 1000 }
-            };
-
-            ConfigManager.Load(monsterConfigs);
+            var monsterConfigContainer = new ConfigContainer<MonsterConfig>();
+            monsterConfigContainer.Add(new MonsterConfig { Id = 1, Name = "Goblin", Hp = 100 });
+            monsterConfigContainer.Add(new MonsterConfig { Id = 2, Name = "Orc", Hp = 200 });
+            ConfigManager.RegisterTable(monsterConfigContainer);
 
             MonsterConfig monster = ConfigManager.Get<MonsterConfig>(2);
 
             Log.Info($"Monster ID: {monster.Id}, Name: {monster.Name}, HP: {monster.Hp}");
-        
-            SkillConfig skillConfig = new SkillConfig { Id = 1, Name = "Fireball", Damage = 50, Cooldown = 2.5f };
-            ConfigManager.Load(new List<SkillConfig> { skillConfig });
-        
-            Log.Info($"Skill ID: {skillConfig.Id}, Name: {skillConfig.Name}, Damage: {skillConfig.Damage}, Cooldown: {skillConfig.Cooldown}");
+
+            var skillConfigContainer = new ConfigContainer<SkillConfig>();
+            skillConfigContainer.Add(new SkillConfig { Id = 1, Name = "Fireball", Damage = 50, Cooldown = 2.5f });
+            ConfigManager.RegisterTable(skillConfigContainer);
+            var skill = ConfigManager.Get<SkillConfig>(1);
+            Log.Info($"Skill ID: {skill.Id}, Name: {skill.Name}, Damage: {skill.Damage}, Cooldown: {skill.Cooldown}");
         }
     }
 }

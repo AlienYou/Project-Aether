@@ -7,42 +7,41 @@ namespace ProjectAether.Config
 {
     public static class ConfigManager
     {
-        private static readonly Dictionary<Type, Dictionary<int, IConfigRow>> _configTables = new ();
+        private static readonly Dictionary<Type, object> _containers = new ();
         public static void Initialize()
         {
-            _configTables.Clear();
+            _containers.Clear();
         }
 
         public static void Shutdown()
         {
-            _configTables.Clear();
+            _containers.Clear();
         }
 
-        public static void Load<T>(List<T> configs) where T : class, IConfigRow
+        public static void RegisterTable<T>(ConfigContainer<T> table) where T : class, IConfigRow
         {
-            var table = new Dictionary<int, IConfigRow>();
+            _containers[typeof(T)] = table;
+        }
 
-            foreach (var row in configs)
+        public static ConfigContainer<T> GetTable<T>() where T : class, IConfigRow
+        {
+            if (_containers.TryGetValue(typeof(T), out var table))
             {
-                table[row.Id] = row;
+                return table as ConfigContainer<T>;
             }
 
-            _configTables[typeof(T)] = table;
+            return null;
         }
 
         public static T Get<T>(int id) where T : class, IConfigRow
         {
-            if (!_configTables.TryGetValue(typeof(T), out var table))
+            var table = GetTable<T>();
+            if (table == null)
             {
-                return null;
+                return default;
             }
 
-            if (!table.TryGetValue(id, out var row))
-            {
-                return null;
-            }
-
-            return row as T;
+            return table.Get(id);
         }
     }
 }
