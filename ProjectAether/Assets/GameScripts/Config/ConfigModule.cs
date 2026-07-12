@@ -14,6 +14,7 @@ namespace ProjectAether.Config
         public string ModuleName => "ConfigModule";
 
         public ModuleState State { get; private set; } = ModuleState.None;
+        private IConfigLoader _loader;
 
         public void Create()
         {
@@ -24,6 +25,7 @@ namespace ProjectAether.Config
         public void Initialize()
         {
             State = ModuleState.Initialized;
+            _loader = new BinaryConfigLoader(); // or new JsonConfigLoader(), depending on your needs
             Log.Info("[Config] Initialize");
         }
 
