@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ProjectAether.Config;
 using ProjectAether.Core;
+using ProjectAether.Resource;
 using UnityEngine;
 
 namespace ProjectAether.Framework
@@ -30,6 +31,7 @@ namespace ProjectAether.Framework
             // ConfigModule
             ModuleManager.Register(new ConfigModule());
             // ResourceModule
+            ModuleManager.Register(new ResourceModule());
             // UIModule
             // NetworkModule
         }
