@@ -20,12 +20,14 @@ namespace ProjectAether.Resource
 
         public void Initialize()
         {
+            ResourceManager.Initialize();
             State = ModuleState.Initialized;
             Log.Info($"[Resource] Initialize");
         }
 
         public void Shutdown()
         {
+            ResourceManager.Shutdown();
             State = ModuleState.Shutdown;
             Log.Info($"[Resource] Shutdown");
         }

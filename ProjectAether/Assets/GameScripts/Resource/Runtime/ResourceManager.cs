@@ -11,12 +11,24 @@ namespace ProjectAether.Resource
 
         public static void Initialize()
         {
-            Log.Info("ResourceManager: Initialization started.");
+            if (IsInitialized)
+            {
+                Log.Warning("ResourceManager: Already initialized.");
+                return;
+            }
+            IsInitialized = true;
+            Log.Info("ResourceManager: Initialize");
         }
 
         public static void Shutdown()
         {
-            Log.Info("ResourceManager: Shutdown started.");
+            if (!IsInitialized)
+            {
+                Log.Warning("ResourceManager: Not initialized.");
+                return;
+            }
+            IsInitialized = false;
+            Log.Info("ResourceManager: Shutdown");
         }
     }
 }

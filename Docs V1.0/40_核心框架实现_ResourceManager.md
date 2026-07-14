@@ -6,7 +6,7 @@
 
 引擎版本：Unity 2022.3.51f1c1
 
-状态：设计阶段
+状态：实施版
 
 关联文档：
 
@@ -18,136 +18,329 @@ ADR-004_程序集与命名空间统一规范
 
 # 1. 文档目标
 
-建立 Project Aether 统一资源访问入口。
+建立 Project Aether 资源系统统一入口。
 
-ResourceManager 是整个资源系统的唯一对外入口。
+当前阶段仅完成：
 
-未来：
+* ResourceManager创建
+* Initialize()
+* Shutdown()
+* 初始化状态管理
+* 重复初始化保护
 
-* Config
-* UI
-* Character
-* Combat
-* Audio
-* VFX
-* Scene
+不实现：
 
-全部通过 ResourceManager 访问资源。
+* LoadAsync<T>()
+* InstantiateAsync()
+* Release()
+* Addressables接入
+* Provider架构
 
----
-
-# 2. 设计原则
-
-禁止：
-
-```csharp
-Addressables.LoadAssetAsync()
-
-Resources.Load()
-
-AssetBundle.LoadAsset()
-```
-
-直接出现在业务代码中。
+上述内容属于后续文档实现范围。
 
 ---
 
-允许：
+# 2. 所属程序集
 
-```csharp
-await ResourceManager.LoadAsync<T>();
-```
-
----
-
-# 3. 职责
-
-负责：
-
-* 资源加载
-* 资源实例化
-* 资源释放
-* Provider切换
-
-不负责：
-
-* Addressables实现细节
-* AssetBundle实现细节
-
----
-
-# 4. 所属程序集
+程序集：
 
 ```text
 ProjectAether.Resource
 ```
 
+命名空间：
+
+```csharp
+namespace ProjectAether.Resource;
+```
+
 ---
 
-# 5. 工程目录
+# 3. 工程目录
 
 ```text
-Assets/GameScripts/Resource
+Assets/GameScripts
 
-├── Module
-├── Runtime
-│   └── ResourceManager.cs
-│
-├── Providers
-├── Handles
-└── ProjectAether.Resource.asmdef
+└── Resource
+    │
+    ├── Module
+    │   └── ResourceModule.cs
+    │
+    ├── Runtime
+    │   └── ResourceManager.cs
+    │
+    ├── Providers
+    │
+    ├── Handles
+    │
+    └── ProjectAether.Resource.asmdef
 ```
 
 ---
 
-# 6. 当前阶段目标（MVP）
+# 4. ResourceManager职责
 
-本阶段仅实现：
+负责：
+
+* 资源系统初始化
+* 资源系统关闭
+* 资源系统状态管理
+
+不负责：
+
+* 资源加载
+* 资源实例化
+* 资源释放
+
+---
+
+# 5. ResourceManager设计
+
+采用静态管理器模式：
 
 ```csharp
-Initialize()
-
-Shutdown()
-```
-
-暂不实现：
-
-```csharp
-LoadAsync<T>()
-
-InstantiateAsync()
-
-Release()
+public static class ResourceManager
+{
+}
 ```
 
 原因：
 
-IResourceProvider 还未实现。
+当前阶段资源系统全局唯一。
+
+无需实例化。
 
 ---
 
-# 7. ResourceManager职责
+# 6. ResourceManager实现
 
-ResourceManager 作为资源系统统一入口。
-
-负责：
+路径：
 
 ```text
-资源系统初始化
+Assets/GameScripts/Resource/Runtime/ResourceManager.cs
+```
 
-资源系统关闭
+代码：
 
-Provider管理
+```csharp
+using ProjectAether.Core;
+
+namespace ProjectAether.Resource
+{
+    public static class ResourceManager
+    {
+        public static bool IsInitialized
+        {
+            get;
+            private set;
+        }
+
+        public static void Initialize()
+        {
+            if (IsInitialized)
+            {
+                Log.Warning(
+                    "[ResourceManager] Already Initialized");
+
+                return;
+            }
+
+            IsInitialized = true;
+
+            Log.Info(
+                "[ResourceManager] Initialize");
+        }
+
+        public static void Shutdown()
+        {
+            if (!IsInitialized)
+            {
+                return;
+            }
+
+            IsInitialized = false;
+
+            Log.Info(
+                "[ResourceManager] Shutdown");
+        }
+    }
+}
 ```
 
 ---
 
-# 8. 生命周期
+# 7. 初始化流程
 
-启动：
+调用：
+
+```csharp
+ResourceManager.Initialize();
+```
+
+执行：
 
 ```text
-ResourceModule
+检查是否已初始化
+
+↓
+
+设置 IsInitialized = true
+
+↓
+
+输出日志
+```
+
+---
+
+# 8. 重复初始化保护
+
+允许：
+
+```csharp
+ResourceManager.Initialize();
+```
+
+---
+
+禁止重复初始化：
+
+```csharp
+ResourceManager.Initialize();
+
+ResourceManager.Initialize();
+```
+
+日志：
+
+```text
+[ResourceManager] Already Initialized
+```
+
+---
+
+# 9. Shutdown流程
+
+调用：
+
+```csharp
+ResourceManager.Shutdown();
+```
+
+执行：
+
+```text
+检查初始化状态
+
+↓
+
+设置 IsInitialized = false
+
+↓
+
+输出日志
+```
+
+---
+
+# 10. 重复Shutdown保护
+
+允许：
+
+```csharp
+ResourceManager.Shutdown();
+
+ResourceManager.Shutdown();
+```
+
+不会抛出异常。
+
+---
+
+# 11. ResourceModule接入
+
+完成 ResourceManager 后，
+
+修改：
+
+```csharp
+public void Initialize()
+{
+    State = ModuleState.Initialized;
+
+    Log.Info(
+        "[Resource] Initialize");
+}
+```
+
+为：
+
+```csharp
+public void Initialize()
+{
+    ResourceManager.Initialize();
+
+    State = ModuleState.Initialized;
+
+    Log.Info(
+        "[Resource] Initialize");
+}
+```
+
+---
+
+修改：
+
+```csharp
+public void Shutdown()
+{
+    State = ModuleState.Shutdown;
+
+    Log.Info(
+        "[Resource] Shutdown");
+}
+```
+
+为：
+
+```csharp
+public void Shutdown()
+{
+    ResourceManager.Shutdown();
+
+    State = ModuleState.Shutdown;
+
+    Log.Info(
+        "[Resource] Shutdown");
+}
+```
+
+---
+
+# 12. 启动链路
+
+```text
+BootstrapRunner
+
+↓
+
+Bootstrap.Initialize()
+
+↓
+
+RegisterModules()
+
+↓
+
+ResourceModule.Create()
+
+↓
+
+ModuleManager.InitializeAll()
+
+↓
+
+ResourceModule.Initialize()
 
 ↓
 
@@ -156,10 +349,22 @@ ResourceManager.Initialize()
 
 ---
 
-关闭：
+# 13. 关闭链路
 
 ```text
-ResourceModule
+OnApplicationQuit()
+
+↓
+
+Bootstrap.Shutdown()
+
+↓
+
+ModuleManager.ShutdownAll()
+
+↓
+
+ResourceModule.Shutdown()
 
 ↓
 
@@ -168,72 +373,25 @@ ResourceManager.Shutdown()
 
 ---
 
-# 9. 第一阶段接口
+# 14. Unity验证步骤
 
-```csharp
-public static class ResourceManager
-{
-    public static bool IsInitialized
-    {
-        get;
-        private set;
-    }
-
-    public static void Initialize()
-    {
-    }
-
-    public static void Shutdown()
-    {
-    }
-}
-```
-
----
-
-# 10. 初始化规范
-
-Initialize 必须保证：
+创建：
 
 ```text
-只允许执行一次
+ResourceManager.cs
 ```
-
-重复调用：
-
-```csharp
-ResourceManager.Initialize();
-
-ResourceManager.Initialize();
-```
-
-不得产生异常。
 
 ---
 
-# 11. 关闭规范
-
-Shutdown 必须保证：
-
-```text
-允许重复调用
-```
-
-例如：
-
-```csharp
-ResourceManager.Shutdown();
-
-ResourceManager.Shutdown();
-```
-
-安全返回。
+编译通过。
 
 ---
 
-# 12. 日志规范
+运行项目。
 
-初始化：
+---
+
+观察日志：
 
 ```text
 [ResourceManager] Initialize
@@ -241,7 +399,7 @@ ResourceManager.Shutdown();
 
 ---
 
-关闭：
+退出：
 
 ```text
 [ResourceManager] Shutdown
@@ -249,24 +407,25 @@ ResourceManager.Shutdown();
 
 ---
 
-# 13. MVP验收标准
+# 15. MVP验收标准
 
 支持：
 
 * ResourceManager创建
-* Initialize
-* Shutdown
-* 重复调用保护
-* 生命周期日志
+* Initialize()
+* Shutdown()
+* IsInitialized状态管理
+* 重复初始化保护
+* 重复关闭保护
 
 ---
 
-# 14. Git提交规范
+# 16. Git提交规范
 
 Commit：
 
 ```bash
-[Resource][Feature] Add ResourceManager
+git commit -m "[Resource][Feature] Add ResourceManager"
 ```
 
 ---
@@ -279,7 +438,34 @@ v0.1.13
 
 ---
 
-# 15. 下一阶段
+# 17. 当前工程结构
+
+```text
+Assets/GameScripts
+
+├── Core
+├── Framework
+├── Config
+├── Resource
+│
+│   ├── Module
+│   │   └── ResourceModule.cs
+│   │
+│   ├── Runtime
+│   │   └── ResourceManager.cs
+│   │
+│   ├── Providers
+│   │
+│   ├── Handles
+│   │
+│   └── ProjectAether.Resource.asmdef
+│
+└── Entry
+```
+
+---
+
+# 18. 下一阶段
 
 41_核心框架实现_IResourceProvider
 
@@ -293,18 +479,14 @@ InstantiateAsync()
 Release()
 ```
 
-并接入：
-
-```text
-EditorProvider
-```
+建立资源访问抽象层。
 
 ---
 
-# 16. 结论
+# 19. 结论
 
-ResourceManager 是 Project Aether 资源系统统一入口。
+ResourceManager 正式成为 Project Aether 资源系统统一入口。
 
-当前阶段先建立生命周期管理。
+当前阶段负责资源系统生命周期管理。
 
-资源加载能力将在后续 Provider 架构完成后接入。
+资源加载能力将在后续 Provider 架构中实现。
