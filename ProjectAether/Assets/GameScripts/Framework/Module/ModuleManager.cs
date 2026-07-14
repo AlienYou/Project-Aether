@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using ProjectAether.Core;
 using UnityEngine;
 
 namespace ProjectAether.Framework
@@ -12,7 +14,17 @@ namespace ProjectAether.Framework
         {
             if (module == null)
             {
+                Log.Error("ModuleManager: Attempted to register a null module.");
                 return;
+            }
+            Type moduleType = module.GetType();
+            foreach (var existingModule in _modules)
+            {
+                if (existingModule.GetType() == moduleType)
+                {
+                    Log.Error($"ModuleManager: Module of type {moduleType.Name} is already registered.");
+                    return;
+                }
             }
 
             _modules.Add(module);
