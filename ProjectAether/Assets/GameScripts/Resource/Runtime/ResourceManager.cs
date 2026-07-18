@@ -8,27 +8,32 @@ namespace ProjectAether.Resource
     public static class ResourceManager
     {
         public static bool IsInitialized { get; private set; }
+        private static IResourceProvider _provider;
 
         public static void Initialize()
         {
             if (IsInitialized)
             {
-                Log.Warning("ResourceManager: Already initialized.");
+                Log.Warning("[ResourceManager] Already initialized.");
                 return;
             }
             IsInitialized = true;
-            Log.Info("ResourceManager: Initialize");
+            _provider = new Providers.EditorProvider();
+            _provider.Initialize();
+            Log.Info("[ResourceManager] Initialize");
         }
 
         public static void Shutdown()
         {
             if (!IsInitialized)
             {
-                Log.Warning("ResourceManager: Not initialized.");
+                Log.Warning("[ResourceManager] Not initialized.");
                 return;
             }
+            _provider?.Shutdown();
+            _provider = null;
             IsInitialized = false;
-            Log.Info("ResourceManager: Shutdown");
+            Log.Info("[ResourceManager]: Shutdown");
         }
     }
 }
