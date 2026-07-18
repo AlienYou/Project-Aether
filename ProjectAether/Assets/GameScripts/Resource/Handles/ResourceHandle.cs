@@ -9,14 +9,17 @@ namespace ProjectAether.Resource.Handles
         None,
         Loading,
         Loaded,
+        Failed,
         Released,
     }
     public abstract class ResourceHandle
     {
         public string AssetPath { get; protected set; }
         public ResourceHandleState State { get; protected set; } = ResourceHandleState.None;
+        public string Error { get; protected set; }
         public virtual void Release()
         {
+            Error = null;
             State = ResourceHandleState.Released;
         }
     }

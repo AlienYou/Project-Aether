@@ -1,219 +1,106 @@
-# 42_核心框架实现_ResourceHandle
+# 42A_ResourceHandle设计修正
 
 版本：v1.0
 
 项目：Project Aether
 
-引擎版本：Unity 2022.3.51f1c1
-
-状态：实施版
+状态：修正文档
 
 关联文档：
 
-40_核心框架实现_ResourceManager
+42_核心框架实现_ResourceHandle
 
-41_核心框架实现_IResourceProvider
-
-ADR-004_程序集与命名空间统一规范
+43_核心框架实现_ResourceManager_LoadAsync
 
 ---
 
-# 1. 文档目标
+# 1. 问题说明
 
-建立 Project Aether 资源句柄系统（Resource Handle System）。
-
-本阶段目标：
-
-* 建立 ResourceHandle 基类
-* 建立资源生命周期管理入口
-* 建立资源状态管理
-* 为后续 Addressables 接入做好准备
-
-本阶段不实现：
-
-* 引用计数
-* Addressables Handle封装
-* 自动释放
-* 资源依赖管理
-
----
-
-# 2. 为什么需要Handle
-
-错误做法：
+42文档定义：
 
 ```csharp
-var prefab =
-    await ResourceManager.LoadAsync<GameObject>(
-        "Player");
-```
-
-业务层直接持有：
-
-```csharp
-GameObject
-```
-
-未来：
-
-```text
-无法统计资源
-
-无法释放资源
-
-无法做引用计数
-
-无法检测泄漏
-```
-
----
-
-工业级做法：
-
-```csharp
-var handle =
-    await ResourceManager.LoadAsync<GameObject>(
-        "Player");
-```
-
-业务层持有：
-
-```csharp
-ResourceHandle<GameObject>
-```
-
----
-
-# 3. 架构定位
-
-```text
-Game Logic
-
-↓
-
-ResourceManager
-
-↓
-
-ResourceHandle<T>
-
-↓
-
-IResourceProvider
-
-↓
-
-EditorProvider
-
-↓
-
-AddressablesProvider（未来）
-```
-
----
-
-# 4. 工程目录
-
-```text
-Assets/GameScripts
-
-└── Resource
-    │
-    ├── Runtime
-    │   └── ResourceManager.cs
-    │
-    ├── Providers
-    │
-    ├── Handles
-    │   ├── ResourceHandle.cs
-    │   └── ResourceHandleT.cs
-    │
-    └── ProjectAether.Resource.asmdef
-```
-
----
-
-# 5. 生命周期设计
-
-资源状态：
-
-```csharp
-namespace ProjectAether.Resource
+public abstract class ResourceHandle
 {
-    public enum ResourceHandleState
+    public string AssetPath
     {
-        None,
+        get;
+        protected set;
+    }
 
-        Loading,
-
-        Loaded,
-
-        Released,
+    public ResourceHandleState State
+    {
+        get;
+        protected set;
     }
 }
 ```
 
----
-
-状态流转：
-
-```text
-None
-
-↓
-
-Loading
-
-↓
-
-Loaded
-
-↓
-
-Released
-```
-
----
-
-# 6. ResourceHandle基类
-
-文件：
-
-```text
-Assets/GameScripts/Resource/Handles/ResourceHandle.cs
-```
-
-代码：
+43文档中：
 
 ```csharp
-namespace ProjectAether.Resource
-{
-    public abstract class ResourceHandle
-    {
-        public string AssetPath
-        {
-            get;
-            protected set;
-        }
+handle.AssetPath = assetPath;
 
-        public ResourceHandleState State
-        {
-            get;
-            protected set;
-        }
+handle.State =
+    ResourceHandleState.Loaded;
+```
 
-        public virtual void Release()
-        {
-            State =
-                ResourceHandleState.Released;
-        }
-    }
-}
+由于：
+
+```csharp
+protected set;
+```
+
+限制，
+
+EditorProvider 无法访问。
+
+将导致编译错误：
+
+```text
+CS0272
+The property or indexer cannot be used in this context because the set accessor is inaccessible
 ```
 
 ---
 
-# 7. 泛型Handle
+# 2. 修正原则
+
+禁止：
+
+```csharp
+public set;
+```
+
+原因：
+
+```text
+业务代码可以随意修改资源状态
+破坏封装
+```
+
+---
+
+保持：
+
+```csharp
+protected set;
+```
+
+设计不变。
+
+---
+
+增加：
+
+```csharp
+internal
+```
+
+初始化接口。
+
+---
+
+# 3. ResourceHandle<T>最终实现
 
 文件：
 
@@ -221,7 +108,7 @@ namespace ProjectAether.Resource
 Assets/GameScripts/Resource/Handles/ResourceHandleT.cs
 ```
 
-代码：
+修改为：
 
 ```csharp
 namespace ProjectAether.Resource
@@ -232,7 +119,19 @@ namespace ProjectAether.Resource
         public T Asset
         {
             get;
-            internal set;
+            private set;
+        }
+
+        internal void SetLoaded(
+            string assetPath,
+            T asset)
+        {
+            AssetPath = assetPath;
+
+            Asset = asset;
+
+            State =
+                ResourceHandleState.Loaded;
         }
     }
 }
@@ -240,171 +139,134 @@ namespace ProjectAether.Resource
 
 ---
 
-# 8. 为什么不直接返回T
+# 4. Provider修正
 
-例如：
+错误写法：
 
 ```csharp
-GameObject player =
-    await LoadAsync<GameObject>();
+handle.AssetPath =
+    assetPath;
+
+handle.State =
+    ResourceHandleState.Loaded;
 ```
 
-问题：
-
-```text
-无法知道谁持有资源
-
-无法统计资源数量
-
-无法统一释放
-```
+删除。
 
 ---
 
 改为：
 
 ```csharp
-ResourceHandle<GameObject>
-```
+var handle =
+    new ResourceHandle<T>();
 
-未来：
+handle.SetLoaded(
+    assetPath,
+    asset);
 
-```text
-支持引用计数
-
-支持资源分析
-
-支持内存统计
-
-支持自动释放
+return handle;
 ```
 
 ---
 
-# 9. ResourceManager规划
+# 5. asmdef分析
 
 当前：
 
-```csharp
-Initialize()
-
-Shutdown()
-```
-
----
-
-下一阶段扩展：
-
-```csharp
-LoadAsync<T>()
-
-Release()
-```
-
-返回：
-
-```csharp
-ResourceHandle<T>
-```
-
-而不是：
-
-```csharp
-T
-```
-
----
-
-# 10. Unity验证
-
-测试代码：
-
-```csharp
-var handle =
-    new ResourceHandle<GameObject>();
-```
-
-验证：
-
 ```text
-编译通过
+ProjectAether.Resource
 ```
 
-即可。
-
----
-
-# 11. MVP验收标准
-
-支持：
-
-* ResourceHandle
-* ResourceHandle<T>
-* ResourceHandleState
-* Release()
-
-不支持：
-
-* 引用计数
-* 自动释放
-* Addressables Handle
-
----
-
-# 12. Git提交规范
-
-Commit：
-
-```bash
-git commit -m "[Resource][Feature] Add resource handle system"
-```
-
-Tag：
-
-```text
-v0.1.15
-```
-
----
-
-# 13. 下一阶段
-
-43_核心框架实现_ResourceManager_LoadAsync
-
-实现：
-
-```csharp
-LoadAsync<T>()
-```
-
-正式打通：
+包含：
 
 ```text
 ResourceManager
 
-↓
-
 IResourceProvider
 
-↓
+EditorProvider
 
-ResourceHandle<T>
+ResourceHandle
 ```
 
-形成完整资源加载链路。
+属于同一个程序集。
+
+因此：
+
+```csharp
+internal
+```
+
+可正常访问。
 
 ---
 
-# 14. 结论
+程序集外：
 
-ResourceHandle 是 Project Aether 资源生命周期管理的基础设施。
+```text
+ProjectAether.UI
 
-未来所有资源加载接口统一返回：
+ProjectAether.Config
 
-```csharp
-ResourceHandle<T>
+ProjectAether.Combat
 ```
 
-而不是直接返回资源对象。
+无法调用：
 
-这是后续引用计数、自动释放、内存分析系统的基础。
+```csharp
+SetLoaded()
+```
+
+满足封装要求。
+
+---
+
+# 6. MVP验收标准
+
+支持：
+
+* AssetPath只读
+* State只读
+* Asset只读
+* Provider初始化Handle
+
+禁止：
+
+* 业务代码修改状态
+* 外部模块修改状态
+
+---
+
+# 7. 对43文档影响
+
+43文档中：
+
+```csharp
+handle.AssetPath = assetPath;
+
+handle.State =
+    ResourceHandleState.Loaded;
+```
+
+全部作废。
+
+统一替换为：
+
+```csharp
+handle.SetLoaded(
+    assetPath,
+    asset);
+```
+
+---
+
+# 8. 结论
+
+ResourceHandle保持封装性。
+
+Provider拥有初始化权限。
+
+业务层只有读取权限。
+
+符合 Project Aether 工业级资源系统设计规范。
