@@ -1,8 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using ProjectAether.Core;
 using ProjectAether.Resource.Handles;
+using UnityEditor.VersionControl;
 using UnityEngine;
 
 namespace ProjectAether.Resource
@@ -25,7 +27,7 @@ namespace ProjectAether.Resource
             Log.Info("[ResourceManager] Initialize");
         }
 
-        public async static UniTask<ResourceHandle<T>> LoadAsync<T>(string assetPath) where T : Object
+        public async static UniTask<ResourceHandle<T>> LoadAsync<T>(string assetPath) where T : UnityEngine.Object
         {
             if (!IsInitialized)
             {
@@ -35,8 +37,12 @@ namespace ProjectAether.Resource
             var key = new ResourceKey(assetPath, typeof(T));
             if (ResourceCache.TryGet(key, out var cachedHandle))
             {
-                cachedHandle.Retain();
-                return await UniTask.FromResult(cachedHandle as ResourceHandle<T>);
+                if (cachedHandle is ResourceHandle<T> typedHandle)
+                {
+                    typedHandle.Retain();
+                    return typedHandle;
+                }
+                throw new InvalidOperationException($"Cache Type Mismatch : {assetPath}");
             }
             var handle = await _provider.LoadAsync<T>(assetPath);
             if (handle.State == ResourceHandleState.Loaded)
