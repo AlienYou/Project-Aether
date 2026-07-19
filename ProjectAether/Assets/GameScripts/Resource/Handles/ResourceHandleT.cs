@@ -13,7 +13,7 @@ namespace ProjectAether.Resource.Handles
             Asset = asset;
             State = ResourceHandleState.Loaded;
             Error = null;
-            ReferenceCount = 1;
+            Retain();
         }
         internal void SetFailed(string path, string error)
         {
@@ -21,7 +21,6 @@ namespace ProjectAether.Resource.Handles
             Asset = default;
             State = ResourceHandleState.Failed;
             Error = error;
-            ReferenceCount = 0;
         }
     }
 }
