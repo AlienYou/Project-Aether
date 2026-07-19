@@ -41,10 +41,6 @@ namespace ProjectAether.Resource
             var handle = await _provider.LoadAsync<T>(assetPath);
             if (handle.State == ResourceHandleState.Loaded)
             {
-                if (!ResourceCache.Add(key, handle))
-                {
-                    Log.Warning($"");
-                }
                 ResourceCache.Add(key, handle);
             }
             return handle;
