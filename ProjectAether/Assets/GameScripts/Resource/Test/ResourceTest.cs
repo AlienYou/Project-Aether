@@ -16,6 +16,13 @@ namespace ProjectAether.Resource.Test
 
             GameObject gameObject = await ResourceManager.InstantiateAsync("Prefabs/Monster");
             Log.Info($"Instantiated GameObject: {gameObject.name}");
+            Log.Info($"Handle Reference Count: {handle.ReferenceCount}, Can Release: {handle.CanRelease}");
+            handle.Retain();
+            Log.Info($"After Retain - Handle Reference Count: {handle.ReferenceCount}, Can Release: {handle.CanRelease}");
+            handle.Release();
+            Log.Info($"After Release - Handle Reference Count: {handle.ReferenceCount}, Can Release: {handle.CanRelease}");
+            handle.Release();
+            Log.Info($"After Release - Handle Reference Count: {handle.ReferenceCount}, Can Release: {handle.CanRelease}");
         }
     }
 }

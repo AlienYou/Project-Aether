@@ -17,10 +17,23 @@ namespace ProjectAether.Resource.Handles
         public string AssetPath { get; protected set; }
         public ResourceHandleState State { get; protected set; } = ResourceHandleState.None;
         public string Error { get; protected set; }
+        public int ReferenceCount { get; protected set; }
+        public bool CanRelease => ReferenceCount <= 0;
         public virtual void Release()
         {
-            Error = null;
-            State = ResourceHandleState.Released;
+            if (ReferenceCount > 0)
+            {
+                ReferenceCount--;
+            }
+            if (ReferenceCount <= 0)
+            {
+                State = ResourceHandleState.Released;
+                Error = null;
+            }
+        }
+        public virtual void Retain()
+        {
+            ReferenceCount++;
         }
     }
 }
