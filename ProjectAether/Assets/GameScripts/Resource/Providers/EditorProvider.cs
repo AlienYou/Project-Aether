@@ -14,6 +14,17 @@ namespace ProjectAether.Resource.Providers
             Log.Info("EditorProvider: Initialize");
         }
 
+        public async UniTask<GameObject> InstantiateAsync(string assetPath)
+        {
+            var handle = await LoadAsync<GameObject>(assetPath);
+            if (handle.State == ResourceHandleState.Failed)
+            {
+                Log.Error($"EditorProvider: InstantiateAsync failed to load asset at path: {assetPath}");
+                return null;
+            }
+            return Object.Instantiate(handle.Asset);
+        }
+
         public async UniTask<ResourceHandle<T>> LoadAsync<T>(string assetPath) where T : Object
         {
             await UniTask.Yield();

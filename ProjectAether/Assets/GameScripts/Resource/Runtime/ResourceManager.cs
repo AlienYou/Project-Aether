@@ -30,10 +30,21 @@ namespace ProjectAether.Resource
             if (!IsInitialized)
             {
                 Log.Error("[ResourceManager] Not initialized.");
-                return default;
+                throw new System.Exception("ResourceManager not initialized.");
             }
             return _provider.LoadAsync<T>(assetPath);
         }
+
+        public static UniTask<GameObject> InstantiateAsync(string assetPath)
+        {
+            if (!IsInitialized)
+            {
+                Log.Error("[ResourceManager] Not initialized.");
+                throw new System.Exception("ResourceManager not initialized.");
+            }
+            return _provider.InstantiateAsync(assetPath);
+        }
+
 
         public static void Shutdown()
         {

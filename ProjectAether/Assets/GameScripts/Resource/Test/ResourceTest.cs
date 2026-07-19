@@ -10,7 +10,6 @@ namespace ProjectAether.Resource.Test
     {
         async void Start()
         {
-            //测试使用
             await UniTask.NextFrame();
             var handle = await ResourceManager.LoadAsync<GameObject>("Prefabs/Player");
             Log.Info($"Loaded asset: {handle.Asset.name}, State: {handle.State}");
