@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using ProjectAether.Resource.Handles;
@@ -16,16 +17,21 @@ namespace ProjectAether.Resource
             AssetType = assetType;
         }
 
+        public bool Equals(ResourceKey other)
+        {
+            return AssetPath == other.AssetPath && AssetType == other.AssetType;
+        }
+
         public override int GetHashCode()
         {
-            return AssetPath.GetHashCode() ^ AssetType.GetHashCode();
+            return HashCode.Combine(AssetPath, AssetType);
         }
 
         public override bool Equals(object obj)
         {
             if (obj is ResourceKey other)
             {
-                return AssetPath == other.AssetPath && AssetType == other.AssetType;
+                return Equals(other);
             }
             return false;
         }
@@ -37,10 +43,18 @@ namespace ProjectAether.Resource
     internal static class ResourceCache
     {
         private static readonly Dictionary<ResourceKey, ResourceHandle> _cache = new Dictionary<ResourceKey, ResourceHandle>();
-
-        public static void Add(ResourceKey key, ResourceHandle handle)
+        
+        public static int count
         {
-            _cache[key] = handle;
+            get
+            {
+                return _cache.Count;
+            }
+        }
+
+        public static bool Add(ResourceKey key, ResourceHandle handle)
+        {
+            return _cache.TryAdd(key, handle);
         }
 
         public static bool TryGet(ResourceKey key, out ResourceHandle handle)
