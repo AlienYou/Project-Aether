@@ -25,14 +25,25 @@ namespace ProjectAether.Resource
             Log.Info("[ResourceManager] Initialize");
         }
 
-        public static UniTask<ResourceHandle<T>> LoadAsync<T>(string assetPath) where T : Object
+        public async static UniTask<ResourceHandle<T>> LoadAsync<T>(string assetPath) where T : Object
         {
             if (!IsInitialized)
             {
                 Log.Error("[ResourceManager] Not initialized.");
                 throw new System.Exception("ResourceManager not initialized.");
             }
-            return _provider.LoadAsync<T>(assetPath);
+            var key = new ResourceKey(assetPath, typeof(T));
+            if (ResourceCache.TryGet(key, out var cachedHandle))
+            {
+                cachedHandle.Retain();
+                return await UniTask.FromResult(cachedHandle as ResourceHandle<T>);
+            }
+            var handle = await _provider.LoadAsync<T>(assetPath);
+            if (handle.State == ResourceHandleState.Loaded)
+            {
+                ResourceCache.Add(key, handle);
+            }
+            return handle;
         }
 
         public static UniTask<GameObject> InstantiateAsync(string assetPath)

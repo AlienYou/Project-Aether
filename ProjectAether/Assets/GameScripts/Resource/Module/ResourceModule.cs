@@ -28,6 +28,7 @@ namespace ProjectAether.Resource
         public void Shutdown()
         {
             ResourceManager.Shutdown();
+            ResourceCache.Clear();
             State = ModuleState.Shutdown;
             Log.Info($"[Resource] Shutdown");
         }

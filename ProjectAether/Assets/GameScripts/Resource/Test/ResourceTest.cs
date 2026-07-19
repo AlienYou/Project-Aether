@@ -23,6 +23,10 @@ namespace ProjectAether.Resource.Test
             Log.Info($"After Release - Handle Reference Count: {handle.ReferenceCount}, Can Release: {handle.CanRelease}");
             handle.Release();
             Log.Info($"After Release - Handle Reference Count: {handle.ReferenceCount}, Can Release: {handle.CanRelease}");
+
+            var h1 = await ResourceManager.LoadAsync<GameObject>("Prefabs/Player");
+            var h2 = await ResourceManager.LoadAsync<GameObject>("Prefabs/Player");
+            Log.Info(h1 == h2 ? "Handles are the same instance." : "Handles are different instances.");
         }
     }
 }
