@@ -39,6 +39,7 @@ namespace ProjectAether.Resource
             {
                 State = ModuleState.Running;
             }
+            ResourceGC.Update();
         }
     }
 }

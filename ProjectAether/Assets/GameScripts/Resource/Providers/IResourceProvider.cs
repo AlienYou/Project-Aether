@@ -12,5 +12,6 @@ namespace ProjectAether.Resource
         void Shutdown();
         UniTask<ResourceHandle<T>> LoadAsync<T>(string assetPath) where T : UnityEngine.Object;
         UniTask<GameObject> InstantiateAsync(string assetPath);
+        void Release(ResourceHandle handle);
     }
 }

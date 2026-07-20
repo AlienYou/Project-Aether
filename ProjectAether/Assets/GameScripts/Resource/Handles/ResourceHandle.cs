@@ -28,6 +28,7 @@ namespace ProjectAether.Resource.Handles
             if (ReferenceCount <= 0)
             {
                 State = ResourceHandleState.Released;
+                ResourceGC.MarkForRelease(this);
             }
         }
         public virtual void Retain()

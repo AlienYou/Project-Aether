@@ -12,6 +12,14 @@ namespace ProjectAether.Resource
     public static class ResourceManager
     {
         public static bool IsInitialized { get; private set; }
+        internal static IResourceProvider Provider
+        {
+            get
+            {
+                return _provider;
+            }
+        }
+
         private static IResourceProvider _provider;
 
         public static void Initialize()

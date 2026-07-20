@@ -27,6 +27,15 @@ namespace ProjectAether.Resource.Test
             var h1 = await ResourceManager.LoadAsync<GameObject>("Prefabs/Player");
             var h2 = await ResourceManager.LoadAsync<GameObject>("Prefabs/Player");
             Log.Info(h1 == h2 ? "Handles are the same instance." : "Handles are different instances.");
+
+            //Release Test
+            // var h3 = await ResourceManager.LoadAsync<GameObject>("Prefabs/Player");
+            // Log.Info($"Before Release RefCount: {h3.ReferenceCount}");
+            // h3.Release();
+            // Log.Info($"After Release RefCount: {h3.ReferenceCount}");
+            // Log.Info($"Before Pending:{ResourceGC.count} {ResourceCache.count}");
+            // await UniTask.NextFrame();
+            // Log.Info($"After Pending:{ResourceGC.count} {ResourceCache.count}");
         }
     }
 }

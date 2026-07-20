@@ -66,5 +66,24 @@ namespace ProjectAether.Resource
         {
             _cache.Clear();
         }
+
+        public static void Remove(ResourceHandle handle)
+        {
+            ResourceKey foundKey = default;
+            bool found = false;
+            foreach (var pair in _cache)
+            {
+                if (ReferenceEquals(pair.Value, handle))
+                {
+                    foundKey = pair.Key;
+                    found = true;
+                    break;
+                }
+            }
+            if (found)
+            {
+                _cache.Remove(foundKey);
+            }
+        }
     }
 }

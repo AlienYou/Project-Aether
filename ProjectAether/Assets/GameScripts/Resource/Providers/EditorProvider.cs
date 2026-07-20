@@ -43,6 +43,11 @@ namespace ProjectAether.Resource.Providers
             return handle;
         }
 
+        public void Release(ResourceHandle handle)
+        {
+            //由于加载使用的是Resources.Load，无需主动释放单个资源
+        }
+
         public void Shutdown()
         {
             Log.Info("EditorProvider: Shutdown");
