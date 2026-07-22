@@ -30,10 +30,7 @@ namespace ProjectAether.Resource.Providers
             await UniTask.Yield();
             //仅用于MVP验证
             T asset = Resources.Load<T>(assetPath);
-            var handle = new ResourceHandle<T>()
-            {
-                Asset = asset
-            };
+            var handle = new ResourceHandle<T>();
             if (asset == null)
             {
                 handle.SetFailed(assetPath, $"Asset Not Found: {assetPath}");

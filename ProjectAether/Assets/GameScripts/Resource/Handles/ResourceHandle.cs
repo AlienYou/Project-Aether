@@ -17,8 +17,12 @@ namespace ProjectAether.Resource.Handles
         public string AssetPath { get; protected set; }
         public ResourceHandleState State { get; protected set; } = ResourceHandleState.None;
         public string Error { get; protected set; }
-        public int ReferenceCount { get; private set; }
+        public int ReferenceCount { get; protected set; }
         public bool CanRelease => ReferenceCount <= 0;
+        public abstract UnityEngine.Object AssetObject
+        {
+            get;
+        }
         public virtual void Release()
         {
             if (ReferenceCount > 0)

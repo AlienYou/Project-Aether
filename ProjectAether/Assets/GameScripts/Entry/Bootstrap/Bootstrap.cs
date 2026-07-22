@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ProjectAether.Config;
 using ProjectAether.Core;
 using ProjectAether.Resource;
+using ProjectAether.Resource.Pool;
 using UnityEngine;
 
 namespace ProjectAether.Framework
@@ -38,6 +39,7 @@ namespace ProjectAether.Framework
 
         public static void Shutdown()
         {
+            PoolManager.Clear();
             // Shutdown logic for the framework
             ModuleManager.ShutdownAll();
             Log.Info("Bootstrap: Shutdown");
