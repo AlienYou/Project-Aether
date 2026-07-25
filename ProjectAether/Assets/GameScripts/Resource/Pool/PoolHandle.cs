@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace ProjectAether.Resource.Pool
@@ -13,13 +14,13 @@ namespace ProjectAether.Resource.Pool
 
         public GameObject Instance => _instance;
 
+        public bool IsReleased => _released;
+
         internal PoolHandle(Pool ownerPool, GameObject instance)
         {
             _ownerPool = ownerPool;
             _instance = instance;
         }
-
-        public bool IsReleased => _released;
         
         public void Release()
         {

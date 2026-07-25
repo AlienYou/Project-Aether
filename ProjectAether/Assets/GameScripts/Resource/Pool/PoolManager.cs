@@ -11,28 +11,22 @@ namespace ProjectAether.Resource.Pool
     {
         private static readonly Dictionary<string, Pool> Pools = new();
 
-        public static async UniTask PrewarmAsync(string assetPath, int count)
-        {
-            var handle = await ResourceManager.LoadAsync<GameObject>(assetPath);
-
-            if (!Pools.TryGetValue(assetPath, out var pool))
-            {
-                pool = new Pool(assetPath, handle);
-                Pools.Add(assetPath, pool);
-            }
-
-            pool.Prewarm(count);
-        }
-
         public static async UniTask<PoolHandle> SpawnAsync(string assetPath)
         {
             if (!Pools.TryGetValue(assetPath, out var pool))
             {
-                await PrewarmAsync(assetPath, 1);
+                await CreatePoolAsync(assetPath);
 
                 pool = Pools[assetPath];
             }
             return pool.Spawn();
+        }
+
+        private static async UniTask CreatePoolAsync(string assetPath)
+        {
+            var handle = await ResourceManager.LoadAsync<GameObject>(assetPath);
+            var pool = new Pool(assetPath, handle);
+            Pools.Add(assetPath, pool);
         }
 
         public static void Clear()
