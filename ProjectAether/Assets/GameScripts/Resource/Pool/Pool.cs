@@ -32,7 +32,7 @@ namespace ProjectAether.Resource.Pool
             _root = root.transform;
         }
 
-        public GameObject Spawn()
+        public PoolHandle Spawn()
         {
             GameObject instance;
             if (_inactiveObjects.Count > 0)
@@ -44,7 +44,7 @@ namespace ProjectAether.Resource.Pool
                 instance = CreateInstance();
             }
             instance.SetActive(true);
-            return instance;
+            return new PoolHandle(this, instance);
         }
 
         public void Recycle(GameObject instance)

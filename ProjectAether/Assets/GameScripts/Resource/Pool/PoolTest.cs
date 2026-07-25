@@ -14,13 +14,13 @@ namespace ProjectAether.Resource.Pool.Test
 
             await PoolManager.PrewarmAsync("Effect/FireBall", 10);
 
-            var obj = await PoolManager.SpawnAsync("Effect/FireBall");
+            var handle = await PoolManager.SpawnAsync("Effect/FireBall");
 
-            obj.transform.position = Vector3.zero;
+            handle.Instance.transform.position = Vector3.zero;
 
             await UniTask.Delay(3000);
 
-            PoolManager.Recycle(obj);
+            handle.Release();
         }
 
         void OnDestroy()

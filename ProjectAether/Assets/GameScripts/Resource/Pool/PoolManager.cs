@@ -24,7 +24,7 @@ namespace ProjectAether.Resource.Pool
             pool.Prewarm(count);
         }
 
-        public static async UniTask<GameObject> SpawnAsync(string assetPath)
+        public static async UniTask<PoolHandle> SpawnAsync(string assetPath)
         {
             if (!Pools.TryGetValue(assetPath, out var pool))
             {
@@ -33,20 +33,6 @@ namespace ProjectAether.Resource.Pool
                 pool = Pools[assetPath];
             }
             return pool.Spawn();
-        }
-
-        public static void Recycle(GameObject instance)
-        {
-            var item = instance.GetComponent<PoolItem>();
-            if (item == null)
-            {
-                Log.Error("Object is not Pool Object");
-                return;
-            }
-            if (Pools.TryGetValue(item.PoolKey, out var pool))
-            {
-                pool.Recycle(instance);
-            }
         }
 
         public static void Clear()
