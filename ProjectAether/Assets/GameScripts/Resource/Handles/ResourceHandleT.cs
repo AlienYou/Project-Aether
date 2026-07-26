@@ -1,40 +1,33 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Analytics;
 using UnityEngine;
 
 namespace ProjectAether.Resource.Handles
 {
-    public class ResourceHandle<T> : ResourceHandle where T : Object
+    public class ResourceHandle<T> : ResourceHandleBase where T : Object
     {
-        private T _asset;
-        public T Asset
-        {
-            get
-            {
-                return _asset;
-            }
-        }
-
+        public T Asset { get; protected set; }
         public override Object AssetObject
         {
             get
             {
-                return _asset;
+                return Asset;
             }
         }
 
-        internal void SetLoaded(string path, T asset)
+        internal void SetLoaded(AssetKey assetKey, T asset)
         {
-            AssetPath = path;
-            _asset = asset;
+            AssetKey = assetKey;
+            Asset = asset;
             State = ResourceHandleState.Loaded;
             Error = null;
             Retain();
         }
-        internal void SetFailed(string path, string error)
+        internal void SetFailed(AssetKey assetKey, string error)
         {
-            AssetPath = path;
-            _asset = default;
+            AssetKey = assetKey;
+            Asset = default;
             State = ResourceHandleState.Failed;
             Error = error;
         }

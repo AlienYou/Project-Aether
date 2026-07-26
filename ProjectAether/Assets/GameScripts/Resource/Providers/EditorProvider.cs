@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using ProjectAether.Core;
 using ProjectAether.Resource.Handles;
+using UnityEditor.VersionControl;
 using UnityEngine;
 
 namespace ProjectAether.Resource.Providers
@@ -28,19 +29,20 @@ namespace ProjectAether.Resource.Providers
         public async UniTask<ResourceHandle<T>> LoadAsync<T>(string assetPath) where T : Object
         {
             await UniTask.Yield();
+            var assetKey = new AssetKey(assetPath);
             //仅用于MVP验证
             T asset = Resources.Load<T>(assetPath);
             var handle = new ResourceHandle<T>();
             if (asset == null)
             {
-                handle.SetFailed(assetPath, $"Asset Not Found: {assetPath}");
+                handle.SetFailed(assetKey, $"Asset Not Found: {assetPath}");
                 return handle;
             }
-            handle.SetLoaded(assetPath, asset);
+            handle.SetLoaded(assetKey, asset);
             return handle;
         }
 
-        public void Release(ResourceHandle handle)
+        public void Release(ResourceHandleBase handle)
         {
             //由于加载使用的是Resources.Load，无需主动释放单个资源
         }

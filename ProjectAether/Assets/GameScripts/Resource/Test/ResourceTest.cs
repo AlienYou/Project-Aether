@@ -11,11 +11,9 @@ namespace ProjectAether.Resource.Test
         async void Start()
         {
             await UniTask.NextFrame();
-            var handle = await ResourceManager.LoadAsync<GameObject>("Prefabs/Player");
+            var handle = await ResourceManager.LoadAsync<GameObject>(AssetKeys.Character.Hero);
             Log.Info($"Loaded asset: {handle.Asset.name}, State: {handle.State}");
 
-            GameObject gameObject = await ResourceManager.InstantiateAsync("Prefabs/Monster");
-            Log.Info($"Instantiated GameObject: {gameObject.name}");
             Log.Info($"Handle Reference Count: {handle.ReferenceCount}, Can Release: {handle.CanRelease}");
             handle.Retain();
             Log.Info($"After Retain - Handle Reference Count: {handle.ReferenceCount}, Can Release: {handle.CanRelease}");
@@ -24,8 +22,8 @@ namespace ProjectAether.Resource.Test
             handle.Release();
             Log.Info($"After Release - Handle Reference Count: {handle.ReferenceCount}, Can Release: {handle.CanRelease}");
 
-            var h1 = await ResourceManager.LoadAsync<GameObject>("Prefabs/Player");
-            var h2 = await ResourceManager.LoadAsync<GameObject>("Prefabs/Player");
+            var h1 = await ResourceManager.LoadAsync<GameObject>(AssetKeys.Character.Hero);
+            var h2 = await ResourceManager.LoadAsync<GameObject>(AssetKeys.Character.Hero);
             Log.Info(h1 == h2 ? "Handles are the same instance." : "Handles are different instances.");
 
             //Release Test

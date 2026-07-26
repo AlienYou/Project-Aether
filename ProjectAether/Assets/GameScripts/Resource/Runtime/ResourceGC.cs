@@ -9,7 +9,7 @@ namespace ProjectAether.Resource
 {
     internal static class ResourceGC
     {
-        internal static readonly List<ResourceHandle> _pendingRelease = new();
+        internal static readonly List<ResourceHandleBase> _pendingRelease = new();
 
         public static int count
         {
@@ -19,7 +19,7 @@ namespace ProjectAether.Resource
             }
         }
 
-        public static void MarkForRelease(ResourceHandle handle)
+        public static void MarkForRelease(ResourceHandleBase handle)
         {
             if (handle == null)
             {
@@ -51,7 +51,7 @@ namespace ProjectAether.Resource
             }
         }
 
-        private static void ReleaseInternal(ResourceHandle handle)
+        private static void ReleaseInternal(ResourceHandleBase handle)
         {
             ResourceCache.Remove(handle);
             ResourceManager.Provider.Release(handle);

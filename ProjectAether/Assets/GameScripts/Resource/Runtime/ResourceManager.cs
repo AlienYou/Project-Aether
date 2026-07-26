@@ -35,14 +35,26 @@ namespace ProjectAether.Resource
             Log.Info("[ResourceManager] Initialize");
         }
 
-        public async static UniTask<ResourceHandle<T>> LoadAsync<T>(string assetPath) where T : UnityEngine.Object
+        public async static UniTask<ResourceHandle<T>> LoadAsync<T>(AssetKey assetKey) where T : UnityEngine.Object
+        {
+            return await LoadAsyncInternal<T>(assetKey);
+        }
+
+        [System.Obsolete("Use AssetKey instead")]
+        public async static UniTask<ResourceHandle<T>> LoadAsync<T>(string path) where T : UnityEngine.Object
+        {
+            return await LoadAsyncInternal<T>(new AssetKey(path));
+        }
+
+        private async static UniTask<ResourceHandle<T>> LoadAsyncInternal<T>(AssetKey assetKey) where T : UnityEngine.Object
         {
             if (!IsInitialized)
             {
                 Log.Error("[ResourceManager] Not initialized.");
                 throw new System.Exception("ResourceManager not initialized.");
             }
-            var key = new ResourceKey(assetPath, typeof(T));
+            var path = assetKey.Value;
+            var key = new ResourceKey(path, typeof(T));
             if (ResourceCache.TryGet(key, out var cachedHandle))
             {
                 if (cachedHandle is ResourceHandle<T> typedHandle)
@@ -50,26 +62,21 @@ namespace ProjectAether.Resource
                     typedHandle.Retain();
                     return typedHandle;
                 }
-                throw new InvalidOperationException($"Cache Type Mismatch : {assetPath}");
+                throw new InvalidOperationException($"Cache Type Mismatch : {assetKey}");
             }
-            var handle = await _provider.LoadAsync<T>(assetPath);
-            if (handle.State == ResourceHandleState.Loaded)
+            var handle = await _provider.LoadAsync<T>(path);
+            switch (handle.State)
             {
-                ResourceCache.Add(key, handle);
+                case ResourceHandleState.Loaded:
+                    ResourceCache.Add(key, handle);
+                    break;
+                case ResourceHandleState.Failed:
+                    throw new Exception($"[ResourceManager] key:{assetKey} loaded failed");
+                default:
+                    break;
             }
             return handle;
         }
-
-        public static UniTask<GameObject> InstantiateAsync(string assetPath)
-        {
-            if (!IsInitialized)
-            {
-                Log.Error("[ResourceManager] Not initialized.");
-                throw new System.Exception("ResourceManager not initialized.");
-            }
-            return _provider.InstantiateAsync(assetPath);
-        }
-
 
         public static void Shutdown()
         {

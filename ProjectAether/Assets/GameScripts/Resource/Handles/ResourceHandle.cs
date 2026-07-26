@@ -12,9 +12,10 @@ namespace ProjectAether.Resource.Handles
         Failed,
         Released,
     }
-    public abstract class ResourceHandle
+    public abstract class ResourceHandleBase
     {
-        public string AssetPath { get; protected set; }
+        protected AssetKey AssetKey { get; private protected set; }
+        public string AssetPath => AssetKey.Value;
         public ResourceHandleState State { get; protected set; } = ResourceHandleState.None;
         public string Error { get; protected set; }
         public int ReferenceCount { get; protected set; }
@@ -23,6 +24,7 @@ namespace ProjectAether.Resource.Handles
         {
             get;
         }
+
         public virtual void Release()
         {
             if (ReferenceCount > 0)

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace ProjectAether.Resource
 {
-    internal readonly struct ResourceKey
+    internal readonly struct ResourceKey : IEquatable<ResourceKey>
     {
         public readonly string AssetPath;
         public readonly System.Type AssetType;
@@ -29,11 +29,16 @@ namespace ProjectAether.Resource
 
         public override bool Equals(object obj)
         {
-            if (obj is ResourceKey other)
-            {
-                return Equals(other);
-            }
-            return false;
+            return obj is ResourceKey other && this.Equals(other);
+        }
+
+        public static bool operator ==(ResourceKey left, ResourceKey right)
+        {
+            return left.Equals(right);
+        }
+        public static bool operator !=(ResourceKey left, ResourceKey right)
+        {
+            return !left.Equals(right);
         }
     }
     /// <summary>
@@ -42,7 +47,7 @@ namespace ProjectAether.Resource
     /// </summary>
     internal static class ResourceCache
     {
-        private static readonly Dictionary<ResourceKey, ResourceHandle> _cache = new Dictionary<ResourceKey, ResourceHandle>();
+        private static readonly Dictionary<ResourceKey, ResourceHandleBase> _cache = new Dictionary<ResourceKey, ResourceHandleBase>();
         
         public static int count
         {
@@ -52,12 +57,12 @@ namespace ProjectAether.Resource
             }
         }
 
-        public static bool Add(ResourceKey key, ResourceHandle handle)
+        public static bool Add(ResourceKey key, ResourceHandleBase handle)
         {
             return _cache.TryAdd(key, handle);
         }
 
-        public static bool TryGet(ResourceKey key, out ResourceHandle handle)
+        public static bool TryGet(ResourceKey key, out ResourceHandleBase handle)
         {
             return _cache.TryGetValue(key, out handle);
         }
@@ -67,7 +72,7 @@ namespace ProjectAether.Resource
             _cache.Clear();
         }
 
-        public static void Remove(ResourceHandle handle)
+        public static void Remove(ResourceHandleBase handle)
         {
             ResourceKey foundKey = default;
             bool found = false;
