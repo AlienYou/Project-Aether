@@ -71,7 +71,7 @@ namespace ProjectAether.Resource
                     ResourceCache.Add(key, handle);
                     break;
                 case ResourceHandleState.Failed:
-                    throw new Exception($"[ResourceManager] key:{assetKey} loaded failed");
+                    throw new Exception($"[ResourceManager] key:{assetKey} loaded failed, error:{handle.Error}");
                 default:
                     break;
             }
