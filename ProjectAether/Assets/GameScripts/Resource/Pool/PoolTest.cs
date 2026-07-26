@@ -14,7 +14,7 @@ namespace ProjectAether.Resource.Pool.Test
             //测试使用，要等BootStrap初始化
             await UniTask.NextFrame();
             
-            _handle = await PoolManager.SpawnAsync(AssetKeys.Effect.FireBall.Value);
+            _handle = await PoolManager.SpawnAsync(AssetKeys.Effect.FireBall);
             Log.Info($"Spawn Instance: {_handle.Instance.name}");
             _handle.Instance.transform.position = Vector3.zero;
         }

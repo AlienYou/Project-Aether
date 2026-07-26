@@ -11,21 +11,22 @@ namespace ProjectAether.Resource.Pool
 {
     internal sealed class Pool
     {
+        public AssetKey AssetKey { get; }
         private readonly Queue<GameObject> _inactiveObjects = new();
 
         private readonly string _poolKey;
         private readonly ResourceHandle<GameObject> _prefabHandle;
         private readonly Transform _root;
 
-        public Pool(string poolKey, ResourceHandle<GameObject> handle)
+        public Pool(AssetKey key, ResourceHandle<GameObject> handle)
         {
-            _poolKey = poolKey;
+            _poolKey = key.Value;
             _prefabHandle = handle;
 
             // Pool持有Prefab引用
             _prefabHandle.Retain();
 
-            var root = new GameObject(poolKey);
+            var root = new GameObject(_poolKey);
 
             root.transform.SetParent(PoolRoot.Root);
 
